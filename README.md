@@ -27,16 +27,22 @@ To allow HTTP Logger in your application, add the `HttpLoggerMiddleware` middlew
 ],
 ```
 
-Also, to allow HTTP Logger for exception responses, you need add the `HttpLoggerExceptionHandler` handler at the top of the property of `config/autoload/exceptions.php` file:
+Also, to allow HTTP Logger for exception responses, you need add the `HttpLoggerExceptionHandler` handler at the bottom of the property of `config/autoload/exceptions.php` file:
 
 ```php
 'handler' => [
     'http' => [
-        Gokure\HttpLogger\HttpLoggerExceptionHandler::class,
         ...
+        Gokure\HttpLogger\HttpLoggerExceptionHandler::class,
     ],
 ],
 ```
+
+> **Note:** No response logged, if `$this->stopPropagation()` is used in the previous exception handlers.
+
+## TODO
+
+[] To filter secret body of requests and responses.
 
 ## License
 
