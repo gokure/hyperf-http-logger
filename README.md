@@ -42,7 +42,8 @@ Also, to allow HTTP Logger for exception responses, you need add the `HttpLogger
 
 ## TODO
 
-[] To filter secret body of requests and responses.
+- [ ] To filter secret body of requests and responses.
+- [ ] Add test cases.
 
 ## License
 
