@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     /**
      * Matches the log request method. `['*']` allows all methods.
      */
-    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    'allowed_methods' => ['*'],
 
     /**
      * Matches the log context of request method. `['*']` allows all methods.
@@ -12,27 +14,20 @@ return [
     'allowed_context_methods' => ['POST', 'PUT', 'PATCH', 'DELETE'],
 
     /**
-     * Sets the slow requests when > 0
+     * Determine bypass logging when the true returned.
+     * For example, you can ignore logging for given user agent.
+     *
+     *     function ($response, $request) {
+     *         return $request->getHeaderLine('user-agent') === 'SLBHealthCheck';
+     *     }
      */
-    'long_request_time' => (float)env('HTTP_LOGGER_LONG_REQUEST_TIME', 3.0),
+    'bypass_function' => function ($response, $request) {},
 
     /**
-     * Sets the logger instance, same as the logger.php file in hyperf.
+     * Sets the logger instance.
      */
     'logger' => [
-        'handler' => [
-            'class' => Monolog\Handler\StreamHandler::class,
-            'constructor' => [
-                'stream' => BASE_PATH . '/runtime/logs/hyperf.log',
-            ],
-        ],
-        'formatter' => [
-            'class' => Monolog\Formatter\LineFormatter::class,
-            'constructor' => [
-                'format' => null,
-                'dateFormat' => 'Y-m-d H:i:s',
-                'allowInlineLineBreaks' => false,
-            ],
-        ],
+        'name' => 'hyperf',
+        'group' => 'default',
     ],
 ];

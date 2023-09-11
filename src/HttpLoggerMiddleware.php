@@ -11,22 +11,19 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 class HttpLoggerMiddleware implements MiddlewareInterface
 {
-    /**
-     * @var HttpLogger
-     */
-    protected $httpLogger;
-
-    public function __construct(HttpLogger $httpLogger)
+    public function __construct(protected HttpLogger $logger)
     {
-        $this->httpLogger = $httpLogger;
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $this->httpLogger->setUp();
-        $response = $handler->handle($request);
-        $this->httpLogger->record($response, $request);
-
-        return $response;
+        try {
+            $response = $handler->handle($request);
+            $this->logger->record($response, $request);
+            return $response;
+        } catch (\Throwable $e) {
+            $this->logger->record($e, $request);
+            throw $e;
+        }
     }
 }
