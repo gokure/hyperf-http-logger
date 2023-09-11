@@ -11,22 +11,16 @@
         }
     ],
     "require": {
-        "php": ">= 7.2",
-        "ext-swoole": ">= 4.4",
-        "psr/log": "^1.0",
-        "psr/container": "^1.0",
-        "hyperf/contract": "^1.0|^2.0",
-        "hyperf/di": "^1.0|^2.0",
-        "hyperf/http-server": "^1.0|^2.0",
-        "hyperf/utils": "^1.0|^2.0",
-        "monolog/monolog": "^2.0"
+        "php": ">= 8.0",
+        "hyperf/di": "~3.0.0",
+        "hyperf/http-server": "~3.0.0",
+        "hyperf/logger": "~3.0.0",
+        "monolog/monolog": "^2.7|^3.1"
     },
     "require-dev": {
-        "mockery/mockery": "^1.0",
-        "phpunit/phpunit": "^7.0.0",
-        "hyperf/testing": "^1.0|^2.0",
-        "roave/security-advisories": "dev-master",
-        "swoole/ide-helper": "^4.5"
+        "mockery/mockery": "^1.4",
+        "phpunit/phpunit": "^9.5",
+        "hyperf/testing": "~3.0.0"
     },
     "autoload": {
         "psr-4": {
@@ -35,7 +29,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.0-dev"
+            "dev-master": "3.0-dev"
         },
         "hyperf": {
             "config": "Gokure\\HttpLogger\\ConfigProvider"
