@@ -10,7 +10,6 @@ use Monolog\Level;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
-use function \Hyperf\Collection\collect;
 
 class HttpLogger
 {
@@ -34,10 +33,14 @@ class HttpLogger
 
         $context = [];
 
+        $Collection = class_exists(\Hyperf\Collection\Collection::class)
+            ? \Hyperf\Collection\Collection::class
+            : \Hyperf\Utils\Collection::class;
+
         if ($this->shouldRecordContext($response, $request)) {
             $context['request'] = array_filter([
                 'body' => $request->getParsedBody(),
-                'files' => collect($request->getUploadedFiles())
+                'files' => $Collection::make($request->getUploadedFiles())
                     ->flatten()
                     ->map(static function ($file) {
                         return [
