@@ -52,10 +52,14 @@ class HttpLogger
             ]);
 
             if ($response instanceof \Throwable) {
-                $context['exception'] = [
+                $exception = [
                     'message' => $response->getMessage(),
                     'trace' => $response->getTraceAsString(),
                 ];
+                if ($response instanceof \Hyperf\Validation\ValidationException) {
+                    $exception['errors'] = $response->errors();
+                }
+                $context['exception'] = $exception;
             } else {
                 $context['response'] = array_filter([
                     'body' => (string)$response->getBody(),
