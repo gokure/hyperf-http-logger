@@ -1,15 +1,26 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of gokure/hyperf-cors.
+ *
+ * @link     https://github.com/gokure/hyperf-cors
+ * @document https://github.com/gokure/hyperf-cors/blob/main/README.md
+ * @contact  gokure@gmail.com
+ * @license  https://github.com/hyperf/hyperf-cors/blob/main/LICENSE
+ */
 
 namespace Gokure\HttpLogger;
 
+use Hyperf\Collection\Collection;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Logger\LoggerFactory;
 use Monolog\Level;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
+use Throwable;
 
 class HttpLogger
 {
@@ -21,11 +32,11 @@ class HttpLogger
     {
         $this->options = $this->normalizeOptions($config->get('http_logger', []));
         $name = $this->options['logger']['name'] ?? 'hyperf';
-        $group = $this->options['logger']['group'] ?? 'default';
-        $this->logger = $factory->get($name, $group);
+        $channel = $this->options['logger']['channel'] ?? 'default';
+        $this->logger = $factory->get($name, $channel);
     }
 
-    public function record(\Throwable|ResponseInterface $response, ServerRequestInterface $request): void
+    public function record(ResponseInterface|Throwable $response, ServerRequestInterface $request): void
     {
         if (! $this->shouldRecord($response, $request)) {
             return;
@@ -33,14 +44,10 @@ class HttpLogger
 
         $context = [];
 
-        $Collection = class_exists(\Hyperf\Collection\Collection::class)
-            ? \Hyperf\Collection\Collection::class
-            : \Hyperf\Utils\Collection::class;
-
         if ($this->shouldRecordContext($response, $request)) {
             $context['request'] = array_filter([
                 'body' => $request->getParsedBody(),
-                'files' => $Collection::make($request->getUploadedFiles())
+                'files' => Collection::make($request->getUploadedFiles())
                     ->flatten()
                     ->map(static function ($file) {
                         return [
@@ -51,14 +58,14 @@ class HttpLogger
                     })->toArray(),
             ]);
 
-            if ($response instanceof \Throwable) {
+            if ($response instanceof Throwable) {
                 $context['exception'] = [
                     'message' => $response->getMessage(),
                     'trace' => $response->getTraceAsString(),
                 ];
             } else {
                 $context['response'] = array_filter([
-                    'body' => (string)$response->getBody(),
+                    'body' => (string) $response->getBody(),
                 ]);
             }
         }
@@ -72,7 +79,8 @@ class HttpLogger
         }
 
         // "GET /path HTTP/1.1" 200 0.026 "User-Agent"
-        $message = sprintf('"%s %s HTTP/%s" %s %s "%s"',
+        $message = sprintf(
+            '"%s %s HTTP/%s" %s %s "%s"',
             $request->getMethod(),
             $request->getRequestTarget(),
             $request->getProtocolVersion(),
@@ -81,28 +89,28 @@ class HttpLogger
             $request->getHeaderLine('user-agent')
         );
 
-        $level = $response instanceof \Throwable ? Level::Error : Level::Info;
+        $level = $response instanceof Throwable ? Level::Error : Level::Info;
         $this->logger->log($level, $message, $context);
     }
 
-    protected function shouldRecord(\Throwable|ResponseInterface $response, ServerRequestInterface $request): bool
+    protected function shouldRecord(ResponseInterface|Throwable $response, ServerRequestInterface $request): bool
     {
-        return $response instanceof \Throwable ||
-            ! $this->isSuccessful($response) ||
-            (
+        return $response instanceof Throwable
+            || ! $this->isSuccessful($response)
+            || (
                 (
-                    $this->options['allowed_methods'] === true ||
-                    in_array(strtoupper($request->getMethod()), $this->options['allowed_methods'], true)
+                    $this->options['allowed_methods'] === true
+                    || in_array(strtoupper($request->getMethod()), $this->options['allowed_methods'], true)
                 ) && $this->options['bypass_function']($response, $request) !== true
             );
     }
 
-    protected function shouldRecordContext(\Throwable|ResponseInterface $response, ServerRequestInterface $request): bool
+    protected function shouldRecordContext(ResponseInterface|Throwable $response, ServerRequestInterface $request): bool
     {
-        return $response instanceof \Throwable ||
-            ! $this->isSuccessful($response) ||
-            $this->options['allowed_context_methods'] === true ||
-            in_array(strtoupper($request->getMethod()), $this->options['allowed_context_methods'], true);
+        return $response instanceof Throwable
+            || ! $this->isSuccessful($response)
+            || $this->options['allowed_context_methods'] === true
+            || in_array(strtoupper($request->getMethod()), $this->options['allowed_context_methods'], true);
     }
 
     protected function isSuccessful(ResponseInterface $response): bool
@@ -112,12 +120,18 @@ class HttpLogger
 
     protected function normalizeOptions(array $options = []): array
     {
+        // compatible with old version
+        if (isset($options['logger']['group'])) {
+            $options['logger']['channel'] = $options['logger']['group'];
+            unset($options['logger']['group']);
+        }
+
         $options += [
             'allowed_methods' => ['*'],
             'allowed_context_methods' => ['POST', 'PUT', 'PATCH', 'DELETE'],
             'logger' => [
                 'name' => 'hyperf',
-                'group' => 'default',
+                'channel' => 'default',
             ],
         ];
 
@@ -127,7 +141,7 @@ class HttpLogger
 
         foreach (['allowed_methods', 'allowed_context_methods'] as $key) {
             if (! is_array($options[$key])) {
-                throw new \RuntimeException('Http Logger config `' . $key . '` should be an array.');
+                throw new RuntimeException('Http Logger config `' . $key . '` should be an array.');
             }
         }
 
