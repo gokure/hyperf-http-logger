@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 /**
- * This file is part of gokure/hyperf-cors.
+ * This file is part of gokure/hyperf-http-logger.
  *
- * @link     https://github.com/gokure/hyperf-cors
- * @document https://github.com/gokure/hyperf-cors/blob/main/README.md
+ * @link     https://github.com/gokure/hyperf-http-logger
+ * @document https://github.com/gokure/hyperf-http-logger/blob/main/README.md
  * @contact  gokure@gmail.com
- * @license  https://github.com/hyperf/hyperf-cors/blob/main/LICENSE
+ * @license  https://github.com/hyperf/hyperf-http-logger/blob/main/LICENSE
  */
 return [
     /*
